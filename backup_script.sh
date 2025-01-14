@@ -1,16 +1,30 @@
 #!/bin/bash
-source=/home/ubuntu/mock_files
-dest=
-file_name="backup$(date +"%Y%m%d_%H%M%S").tr.gz"
-for file in $(find $source -printf "%P\n") ; do
-    if [ -e $dest/$file ] ; then 
-        if [ $source/$file -nt $dest/$file ] ; then
-        echo "New files detected, archiving and compressing..."
-        tar -czvf $file_name -g data.snar $source 
-        else
-        echo "File $file already compressed, ignoring."
-        fi
-    else echo"$file is being archived and compressed to $dest"
-    tar -czvf $file_name -g data.snar $source
-    fi
-done
+
+
+SOURCE=/home/ubuntu/source
+BACKUP=/home/ubuntu/dest
+DATE=$(date +"%Y-%m-%d_%H-%M-%S")   
+BACKUP_FILE="$BACKUP/full_backup.tar.gz" 
+SNAPSHOT="$BACKUP/incremental.snar"    
+
+
+mkdir -p "$BACKUP"
+touch "$SNAPSHOT"
+touch "$BACKUP/incremental_backup_$DATE.tar.gz"
+
+if [ ! -f "$BACKUP_FILE" ]; then
+    echo "Creating full backup..."
+    tar -czf "$BACKUP_FILE" "$SOURCE"
+    echo "The first backup has been completed succesfully $BACKUP_FILE on $DATE" >> backup.log
+else
+    echo "Creating incremental backup..."
+    tar -czg "$SNAPSHOT" -f "$BACKUP/incremental.tar.gz" "$SOURCE"
+    echo "the Incremental backup has been  completed: incremental.tar.gz on $DATE" >>  backup.log
+fi
+
+
+
+    
+
+
+
